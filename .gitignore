@@ -1,0 +1,12 @@
+
+.idea/*
+.ipynb_checkpoints/demo-checkpoint.ipynb
+checkpoint
+mnist.npz
+NNArchitecture/__pycache__/lenet5_mnist.cpython-36.pyc
+SyntheticCrowdsourcing/__pycache__/synthetic_crowd_experts.cpython-36.pyc
+trained_weights.data-00000-of-00001
+trained_weights.index
+utils/__pycache__/utils_dataset_processing.cpython-36.pyc
+VariationalInference/__pycache__/confusion_matrix.cpython-36.pyc
+VariationalInference/__pycache__/VB_iteration.cpython-36.pyc
