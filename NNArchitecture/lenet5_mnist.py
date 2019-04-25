@@ -1,3 +1,10 @@
+#  Copyright (c) 2019, University of Oxford
+
+"""
+Builds a LeNet-5-like CNN
+Y. Lecun, L. Bottou, Y. Bengio, and P. Haffner. Gradient-based learning applied to document recognition.
+Proceedings of the IEEE, 86(11):2278–2324, 1998
+"""
 import tensorflow as tf
 
 

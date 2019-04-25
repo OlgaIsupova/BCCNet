@@ -1,3 +1,5 @@
+#  Copyright (c) 2019. University of Oxford
+
 import numpy as np
 
 

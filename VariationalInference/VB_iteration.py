@@ -1,36 +1,38 @@
+#  Copyright (c) 2019. University of Oxford
+
 import scipy.special as ss
 import numpy as np
 
 
-def VB_iteration(X, nn_output, alpha_workers, alpha0_workers):
+def VB_iteration(X, nn_output, alpha_volunteers, alpha0_volunteers):
     """
     performs one iteration of variational inference update for BCCNet (E-step) -- update for approximating posterior of
     true labels and confusion matrices
     N - number of data points
     J - number of true classes
-    L - number of classes used by experts (normally L == J)
-    W - number of experts
+    L - number of classes used by volunteers (normally L == J)
+    W - number of volunteers
 
-    :param X: N X W expert answers, -1 encodes a missing answer
-    :param nn_output: N X J logits (not a softmax output)
-    :param alpha_workers: J X L X W - current parameters of posterior Dirichlet for confusion matrices
-    :param alpha0_workers: J X L -  parameters of the prior Dirichlet for confusion matrix
-    :return: q_t - approximating posterior for true labels, alpha_workers - updated posterior for confusion matrices,
+    :param X: N X W volunteer answers, -1 encodes a missing answer
+    :param nn_output: N X J logits (not a softmax output!)
+    :param alpha_volunteers: J X L X W - current parameters of posterior Dirichlet for confusion matrices
+    :param alpha0_volunteers: J X L -  parameters of the prior Dirichlet for confusion matrix
+    :return: q_t - approximating posterior for true labels, alpha_volunteers - updated posterior for confusion matrices,
         lower_bound_likelihood - ELBO
     """
 
-    ElogPi_worker = expected_log_Dirichlet_parameters(alpha_workers)
+    ElogPi_volunteer = expected_log_Dirichlet_parameters(alpha_volunteers)
 
     # q_t
-    q_t, Njl, rho = expected_true_labels(X, nn_output, ElogPi_worker)
+    q_t, Njl, rho = expected_true_labels(X, nn_output, ElogPi_volunteer)
 
     # q_pi_workers
-    alpha_workers = updated_alpha_workers(alpha0_workers, Njl)
+    alpha_volunteers = update_alpha_volunteers(alpha0_volunteers, Njl)
 
     # Low bound
-    lower_bound_likelihood = compute_lower_bound_likelihood(alpha0_workers, alpha_workers, q_t, rho, nn_output)
+    lower_bound_likelihood = compute_lower_bound_likelihood(alpha0_volunteers, alpha_volunteers, q_t, rho, nn_output)
 
-    return q_t, alpha_workers, lower_bound_likelihood
+    return q_t, alpha_volunteers, lower_bound_likelihood
 
 
 def logB_from_Dirichlet_parameters(alpha):
@@ -58,16 +60,16 @@ def expected_log_Dirichlet_parameters(param):
     return result
 
 
-def expected_true_labels(X, nn_output, ElogPi_worker):
+def expected_true_labels(X, nn_output, ElogPi_volunteer):
     N, W = X.shape  # N = Number of subjects, W = Number of volunteers.
-    J = ElogPi_worker.shape[0]  # J = Number of classes
-    L = ElogPi_worker.shape[1] # L = Number of classes used by experts
+    J = ElogPi_volunteer.shape[0]  # J = Number of classes
+    L = ElogPi_volunteer.shape[1] # L = Number of classes used by volunteers
 
     rho = np.copy(nn_output)
 
     for w in range(W):
         inds = np.where(X[:, w] > -1)
-        rho[inds, :] = rho[inds, :] + np.transpose(ElogPi_worker[:, np.squeeze(X[inds, w]), w])
+        rho[inds, :] = rho[inds, :] + np.transpose(ElogPi_volunteer[:, np.squeeze(X[inds, w]), w])
 
     rho = rho - np.transpose(np.tile(np.max(rho, 1), (J, 1)))
 
@@ -83,23 +85,23 @@ def expected_true_labels(X, nn_output, ElogPi_worker):
     return q_t, Njl, rho
 
 
-def updated_alpha_workers(alpha0_workers, Njl):
-    W = alpha0_workers.shape[2]
-    alpha_workers = np.zeros_like(alpha0_workers)
+def update_alpha_volunteers(alpha0_volunteers, Njl):
+    W = alpha0_volunteers.shape[2]
+    alpha_volunteers = np.zeros_like(alpha0_volunteers)
 
     for w in range(W):
-        alpha_workers[:, :, w] = alpha0_workers[:, :, w] + Njl[:, :, w]
+        alpha_volunteers[:, :, w] = alpha0_volunteers[:, :, w] + Njl[:, :, w]
 
-    return alpha_workers
+    return alpha_volunteers
 
 
-def compute_lower_bound_likelihood(alpha0_workers, alpha_workers, q_t, rho, nn_output):
-    W = alpha0_workers.shape[2]
+def compute_lower_bound_likelihood(alpha0_volunteers, alpha_volunteers, q_t, rho, nn_output):
+    W = alpha0_volunteers.shape[2]
 
     ll_pi_worker = 0
     for w in range(W):
-        ll_pi_worker = ll_pi_worker - np.sum(logB_from_Dirichlet_parameters(alpha0_workers[:, :, w]) -
-                                             logB_from_Dirichlet_parameters(alpha_workers[:, :, w]))
+        ll_pi_worker = ll_pi_worker - np.sum(logB_from_Dirichlet_parameters(alpha0_volunteers[:, :, w]) -
+                                             logB_from_Dirichlet_parameters(alpha_volunteers[:, :, w]))
 
     ll_t = -np.sum(q_t * rho) + np.sum(np.log(np.sum(np.exp(rho), axis=1)), axis=0)
 

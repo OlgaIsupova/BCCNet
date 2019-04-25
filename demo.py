@@ -1,10 +1,12 @@
+#  Copyright (c) 2019. University of Oxford
+
 import tensorflow as tf
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 from NNArchitecture.lenet5_mnist import cnn_for_mnist
-from SyntheticCrowdsourcing.synthetic_crowd_experts import generate_expert_labels
+from SyntheticCrowdsourcing.synthetic_crowd_volunteers import generate_volunteer_labels
 from VariationalInference.VB_iteration import VB_iteration
 from utils.utils_dataset_processing import shrink_arrays
 from VariationalInference import confusion_matrix
@@ -38,15 +40,15 @@ x_train = whole_train[0]
 y_train = whole_train[1]
 
 # generate synthetic crowdsourced labels
-crowdsourced_labels = generate_expert_labels(n_experts=n_crowd_members, n_classes=n_classes, gt_labels=y_labelled_train,
-                                             n_total_tasks=x_train.shape[0],
-                                             reliability_level=crowd_member_reliability_level)
+crowdsourced_labels = generate_volunteer_labels(n_volunteers=n_crowd_members, n_classes=n_classes, gt_labels=y_labelled_train,
+                                                n_total_tasks=x_train.shape[0],
+                                                reliability_level=crowd_member_reliability_level)
 
 # set up a neural net
 cnn_model = cnn_for_mnist()
 
 # set up variational parameters
-prior_param_confusion_matrices = confusion_matrix.initialise_prior(n_classes=n_classes, n_experts=n_crowd_members,
+prior_param_confusion_matrices = confusion_matrix.initialise_prior(n_classes=n_classes, n_volunteers=n_crowd_members,
                                                                    alpha_diag_prior=confusion_matrix_diagonal_prior)
 variational_param_confusion_matrices = np.copy(prior_param_confusion_matrices)
 

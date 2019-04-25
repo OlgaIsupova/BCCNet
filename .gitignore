@@ -10,3 +10,4 @@ trained_weights.index
 utils/__pycache__/utils_dataset_processing.cpython-36.pyc
 VariationalInference/__pycache__/confusion_matrix.cpython-36.pyc
 VariationalInference/__pycache__/VB_iteration.cpython-36.pyc
+*.pyc
