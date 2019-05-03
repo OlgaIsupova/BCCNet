@@ -1,5 +1,5 @@
 # BCCNet
-(C) Copyright 2019, University of Oxford. Written by [Olga Isupova](https://olgaisupova.github.io/)
+(C) Copyright 2019, University of Oxford. Written by [Olga Isupova](https://olgaisupova.github.io/), [Danil Kuzin](https://danilkuzin.github.io), [Steven Reece](reeece@robots.ox.ac.uk)
 
 This is an implementation of a Bayesian classifier combination neural network - a neural network that is trained directly from noisy crowdsourced labels, it jointly aggregates crowdsourced labels removing biases and identifying reliability of each crowd member and learns weights of a neural network, which then can be used to label new data.
 
